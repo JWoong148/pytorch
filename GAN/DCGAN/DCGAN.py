@@ -96,6 +96,9 @@ class Discriminator(nn.Module):
 G = Generator()
 D = Discriminator()
 
+G = nn.DataParallel(G)
+D = nn.DataParallel(D)
+
 G_optimizer = Adam(G.parameters(), lr=0.0002, betas=(0.5, 0.999))
 D_optimizer = Adam(D.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
@@ -110,7 +113,9 @@ num_epochs = 100
 num_test_samples = 16
 test_z = torch.randn((num_test_samples, 100, 1, 1)).to(device)
 
+tqdm(disable=True, total=0) # tqdm lock initialization
 for epoch in range(num_epochs):
+    tqdm.write('Epoch [{}/{}]'.format(epoch+1, num_epochs))
     for i, data in enumerate(tqdm(data_loader, ncols=80)):
         real_data, _ = data
         batch_size = len(real_data)
@@ -147,8 +152,8 @@ for epoch in range(num_epochs):
         G_optimizer.step()
 
         # if (i + 1) % 100 == 0:
-        print('Epoch [{}/{}] Batch [{}/{}]\nD loss: {:.4f} \tG loss: {:.4f}'.format(
-                epoch + 1, num_epochs, i + 1, len(data_loader), D_loss, G_loss))
+        # tqdm.write('Epoch [{}/{}] Batch [{}/{}]\nD loss: {:.4f} \tG loss: {:.4f}'.format(
+                # epoch + 1, num_epochs, i + 1, len(data_loader), D_loss, G_loss))
 
     # Print result
     test_images = G(test_z)
